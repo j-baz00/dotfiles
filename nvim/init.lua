@@ -29,7 +29,25 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    "folke/tokyonight.nvim",
+    -- Theme: GitHub Dark (matches the #0d1117 gray + bright accent palette)
+    {
+        "projekt0n/github-nvim-theme",
+        name = "github-theme",
+        lazy = false,    -- load during startup, it's the main UI plugin
+        priority = 1000, -- load before everything else so highlights apply first
+        config = function()
+            require("github-theme").setup({
+                options = {
+                    transparent = false,
+                    styles = {
+                        comments = "italic",
+                        keywords = "bold",
+                        functions = "NONE",
+                    },
+                },
+            })
+        end,
+    },
 
     {
         "nvim-tree/nvim-tree.lua",
@@ -117,7 +135,7 @@ require("lazy").setup({
 })
 
 -- Set colorscheme after plugins are loaded
-vim.cmd.colorscheme("tokyonight")
+vim.cmd.colorscheme("github_dark_default")
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>") -- Toggle file explorer
 
 -- LSP keybinds
