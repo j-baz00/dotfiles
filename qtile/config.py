@@ -8,13 +8,27 @@
 # Almost everything you'd want to change lives in the THEME section below.
 # Add widgets in `build_widgets()`, add keybinds in the KEYS section.
 
-from libqtile import bar, layout, qtile, widget
+from libqtile import bar, hook, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
+import subprocess
 
-# ──────────────────────────────────────────────────────────────────────────
-# THEME  (edit this block to restyle everything)
-# ──────────────────────────────────────────────────────────────────────────
+@hook.subscribe.startup_once
+def autostart():
+    #background, display, input
+    subprocess.Popen(["feh", "--bg-fill", "/home/julian/pictures/mtn.jpg"])
+    subprocess.Popen(["xrandr", "--output", "HDMI-1", "--primary"])
+    subprocess.Popen(["picom", "--daemon"])
+    subprocess.Popen(["xset", "r", "rate", "200", "50"  ])
+
+    #lock screen and suspend
+    subprocess.Popen(["xset", "s", "600"]) 
+    subprocess.Popen(["xss-lock", "--", "/home/julian/.config/qtile/lock.sh"])
+    subprocess.Popen(["xset", "+dpms"])
+    subprocess.Popen(["xset", "dpms", "0", "0", "900"])
+
+    #notifications daemon
+    subprocess.Popen(["dunst"])
 
 # GitHub Dark inspired palette: grayscale surfaces + bright accents.
 COLORS = {
@@ -60,6 +74,8 @@ keys = [
     Key([MOD], "j", lazy.layout.down(),  desc="Focus down"),
     Key([MOD], "k", lazy.layout.up(),    desc="Focus up"),
     Key([MOD], "space", lazy.layout.next(), desc="Focus next window"),
+    Key([MOD], "period", lazy.next_screen(), desc="Focus next monitor"),
+    Key([MOD], "comma", lazy.prev_screen(), desc="Focus previous monitor"),
 
     # Move windows
     Key([MOD, "shift"], "h", lazy.layout.shuffle_left(),  desc="Move left"),
@@ -74,21 +90,24 @@ keys = [
     Key([MOD, "control"], "j", lazy.layout.shrink(),      desc="Shrink window"),
     Key([MOD], "n", lazy.layout.normalize(), desc="Reset window sizes"),
     Key([MOD], "m", lazy.layout.maximize(),  desc="Toggle maximize window"),
+    Key([MOD], "r", lazy.layout.reset(),     desc="Reset window size"), 
     Key([MOD, "shift"], "space", lazy.layout.flip(),
         desc="Flip main pane to the other side"),
 
     # Layout / window management
     Key([MOD], "Tab", lazy.next_layout(), desc="Next layout"),
-    Key([MOD], "w", lazy.window.kill(), desc="Close window"),
+    Key([MOD], "q", lazy.window.kill(), desc="Close window"),
     Key([MOD], "f", lazy.window.toggle_fullscreen(), desc="Toggle fullscreen"),
     Key([MOD], "t", lazy.window.toggle_floating(), desc="Toggle floating"),
     Key([MOD, "shift"], "Return", lazy.layout.toggle_split(),
         desc="Toggle split/stack"),
+    Key(["mod1"], "Tab", lazy.spawn("rofi -show window"), desc="Window switcher (all groups)"),
 
     # Launchers
     Key([MOD], "Return", lazy.spawn(TERMINAL), desc="Open terminal"),
-    Key([MOD], "r", lazy.spawn("rofi -show drun"), desc="App launcher"),
+    Key([MOD], "d", lazy.spawn("rofi -show drun"), desc="App launcher"),
     Key([MOD], "p", lazy.spawn("rofi -show run"), desc="Run command"),
+    Key([MOD], "w", lazy.spawn("helium-browser"), desc="Launch web browser"),
 
     # Media / volume / brightness (uses pactl + brightnessctl)
     Key([], "XF86AudioRaiseVolume",
@@ -103,6 +122,9 @@ keys = [
     # Session
     Key([MOD, "control"], "r", lazy.reload_config(), desc="Reload config"),
     Key([MOD, "control"], "q", lazy.shutdown(), desc="Quit qtile"),
+
+    #lock screen
+    Key([MOD, "shift"], "l", lazy.spawn("loginctl lock-session"), desc="Lock screen with blur"),
 ]
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -137,11 +159,11 @@ layouts = [
     # remaining windows stacked on the right.
     layout.MonadTall(
         **layout_theme,
-        ratio=0.55,                 # main pane takes 55% of the screen width
+        ratio=0.50,                 # main pane takes 55% of the screen width
         single_border_width=BORDER, # keep a border even with one window
     ),
     layout.Max(**layout_theme),
-    layout.Columns(**layout_theme, border_on_single=True),
+    #layout.Columns(**layout_theme, border_on_single=True),
     # Uncomment to add more:
     # layout.MonadWide(**layout_theme),  # MonadTall rotated 90° (main on top)
     # layout.Bsp(**layout_theme),
@@ -233,22 +255,37 @@ def build_widgets():
 
         sep(),
 
-        label("VOL", COLORS["yellow"]),
-        widget.Volume(fmt="{}"),
-
-        sep(),
-
-        # Comment out the next two lines on a desktop without a battery.
-        label("BAT", COLORS["orange"]),
-        widget.Battery(
-            format="{percent:2.0%}",
-            low_percentage=0.15,
-            low_foreground=COLORS["red"],
-            notify_below=15,
-            update_interval=30,
+        label("TEMP", COLORS["orange"]),
+        widget.ThermalSensor(
+            tag_sensor="Tctl",
+            format="{temp:.0f}{unit}",
+            update_interval=2.0,
+            foreground=COLORS["fg"],
+            foreground_alarm=COLORS["red"],
+            threshold=80.0,
         ),
 
         sep(),
+
+        label("VOL", COLORS["yellow"]),
+        widget.PulseVolume(
+            fmt="{}",
+            scroll_step=5,
+            mouse_callbacks={"Button1": lazy.spawn("pavucontrol")},
+        ),
+        sep(),
+
+        # Comment out the next two lines on a desktop without a battery.
+        #label("BAT", COLORS["orange"]),
+        #widget.Battery(
+        #    format="{percent:2.0%}",
+        #    low_percentage=0.15,
+        #    low_foreground=COLORS["red"],
+        #    notify_below=15,
+        #    update_interval=30,
+        #),
+
+        #sep(),
 
         widget.Clock(
             format="%a %d %b  %H:%M",

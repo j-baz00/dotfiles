@@ -39,6 +39,7 @@ require("lazy").setup({
             require("github-theme").setup({
                 options = {
                     transparent = false,
+                    terminal_colors = false, -- set manually below to match Alacritty exactly
                     styles = {
                         comments = "italic",
                         keywords = "bold",
@@ -134,8 +135,33 @@ require("lazy").setup({
     },
 })
 
--- Set colorscheme after plugins are loaded
-vim.cmd.colorscheme("github_dark_default")
+-- Set colorscheme after plugins are loaded.
+-- github_dark_dimmed (#22272e) matches the Alacritty github_dark slate (#24292e).
+vim.cmd.colorscheme("github_dark_dimmed")
+
+-- Make Neovim's built-in :terminal use the exact Alacritty github_dark palette,
+-- so an embedded terminal looks identical to the host terminal.
+local alacritty_github_dark = {
+    [0]  = "#586069", -- black
+    [1]  = "#ea4a5a", -- red
+    [2]  = "#34d058", -- green
+    [3]  = "#ffea7f", -- yellow
+    [4]  = "#2188ff", -- blue
+    [5]  = "#b392f0", -- magenta
+    [6]  = "#39c5cf", -- cyan
+    [7]  = "#d1d5da", -- white
+    [8]  = "#959da5", -- bright black
+    [9]  = "#f97583", -- bright red
+    [10] = "#85e89d", -- bright green
+    [11] = "#ffea7f", -- bright yellow
+    [12] = "#79b8ff", -- bright blue
+    [13] = "#b392f0", -- bright magenta
+    [14] = "#56d4dd", -- bright cyan
+    [15] = "#fafbfc", -- bright white
+}
+for i, hex in pairs(alacritty_github_dark) do
+    vim.g["terminal_color_" .. i] = hex
+end
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>") -- Toggle file explorer
 
 -- LSP keybinds
