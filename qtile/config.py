@@ -1,25 +1,18 @@
 # ~/.config/qtile/config.py
-#
-# A clean, extensible qtile config:
-#   - Sharp corners (no rounding), thin crisp borders
-#   - JetBrains Mono everywhere
-#   - GitHub/Google-style dark theme: gray surfaces, bright accent colors
-#
-# Almost everything you'd want to change lives in the THEME section below.
-# Add widgets in `build_widgets()`, add keybinds in the KEYS section.
 
 from libqtile import bar, hook, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 import subprocess
 
+#login items
 @hook.subscribe.startup_once
 def autostart():
     #background, display, input
     subprocess.Popen(["feh", "--bg-fill", "/home/julian/pictures/mtn.jpg"])
     subprocess.Popen(["xrandr", "--output", "HDMI-1", "--primary"])
     subprocess.Popen(["picom", "--daemon"])
-    subprocess.Popen(["xset", "r", "rate", "200", "50"  ])
+    #subprocess.Popen(["xset", "r", "rate", "200", "50"  ])
 
     #lock screen and suspend
     subprocess.Popen(["xset", "s", "600"]) 
@@ -27,12 +20,12 @@ def autostart():
     subprocess.Popen(["xset", "+dpms"])
     subprocess.Popen(["xset", "dpms", "0", "0", "900"])
 
-    #notifications daemon
+    #notifications daemon, polkit, other backend stuff you want running
     subprocess.Popen(["dunst"])
+    subprocess.Popen(["/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"])
 
-# GitHub Dark inspired palette: grayscale surfaces + bright accents.
 COLORS = {
-    "bg":      "#0d1117",  # desktop / deepest background
+    "bg":      "#0d1117",  
     "bg_alt":  "#161b22",  # the bar
     "bg_high": "#21262d",  # hovers, active-group fill
     "fg":      "#c9d1d9",  # primary text
@@ -48,20 +41,20 @@ COLORS = {
     "pink":    "#f778ba",
 }
 
-FONT      = "JetBrains Mono"   # use "JetBrainsMono Nerd Font" if you want glyph icons
+FONT      = "JetBrains Mono"   
 FONT_BOLD = "JetBrains Mono Bold"
 FONT_SIZE = 13
 
 BAR_HEIGHT  = 30
-BAR_MARGIN  = [0, 0, 0, 0]     # [top, right, bottom, left] — set e.g. [6,8,4,8] for a floating bar
-GAP         = 8                # window gap (margin). Set 0 for no gaps.
-BORDER      = 2                # window border width. Set 0 to remove borders.
+BAR_MARGIN  = [0, 0, 0, 0]     # [top, right, bottom, left]
+GAP         = 8                
+BORDER      = 2                
 
 ACTIVE_BORDER   = COLORS["blue"]
 INACTIVE_BORDER = COLORS["border"]
 
-TERMINAL = "alacritty"         # change to kitty / wezterm / foot / etc.
-MOD      = "mod4"              # mod4 = Super/Windows key
+TERMINAL = "alacritty"        
+MOD      = "mod4"   
 
 # ──────────────────────────────────────────────────────────────────────────
 # KEYBINDINGS
@@ -69,44 +62,40 @@ MOD      = "mod4"              # mod4 = Super/Windows key
 
 keys = [
     # Focus
-    Key([MOD], "h", lazy.layout.left(),  desc="Focus left"),
+    Key([MOD], "h", lazy.layout.left(), desc="Focus left"),
     Key([MOD], "l", lazy.layout.right(), desc="Focus right"),
-    Key([MOD], "j", lazy.layout.down(),  desc="Focus down"),
-    Key([MOD], "k", lazy.layout.up(),    desc="Focus up"),
+    Key([MOD], "j", lazy.layout.down(), desc="Focus down"),
+    Key([MOD], "k", lazy.layout.up(), desc="Focus up"),
     Key([MOD], "space", lazy.layout.next(), desc="Focus next window"),
     Key([MOD], "period", lazy.next_screen(), desc="Focus next monitor"),
     Key([MOD], "comma", lazy.prev_screen(), desc="Focus previous monitor"),
 
     # Move windows
-    Key([MOD, "shift"], "h", lazy.layout.shuffle_left(),  desc="Move left"),
+    Key([MOD, "shift"], "h", lazy.layout.shuffle_left(), desc="Move left"),
     Key([MOD, "shift"], "l", lazy.layout.shuffle_right(), desc="Move right"),
-    Key([MOD, "shift"], "j", lazy.layout.shuffle_down(),  desc="Move down"),
-    Key([MOD, "shift"], "k", lazy.layout.shuffle_up(),    desc="Move up"),
+    Key([MOD, "shift"], "j", lazy.layout.shuffle_down(), desc="Move down"),
+    Key([MOD, "shift"], "k", lazy.layout.shuffle_up(), desc="Move up"),
 
-    # Resize  (MonadTall: h/l size the MAIN pane, j/k size the focused window)
-    Key([MOD, "control"], "l", lazy.layout.grow_main(),   desc="Grow main pane"),
+    # Resize 
+    Key([MOD, "control"], "l", lazy.layout.grow_main(), desc="Grow main pane"),
     Key([MOD, "control"], "h", lazy.layout.shrink_main(), desc="Shrink main pane"),
-    Key([MOD, "control"], "k", lazy.layout.grow(),        desc="Grow window"),
-    Key([MOD, "control"], "j", lazy.layout.shrink(),      desc="Shrink window"),
-    Key([MOD], "n", lazy.layout.normalize(), desc="Reset window sizes"),
-    Key([MOD], "m", lazy.layout.maximize(),  desc="Toggle maximize window"),
-    Key([MOD], "r", lazy.layout.reset(),     desc="Reset window size"), 
-    Key([MOD, "shift"], "space", lazy.layout.flip(),
-        desc="Flip main pane to the other side"),
+    Key([MOD, "control"], "k", lazy.layout.grow(), desc="Grow window"),
+    Key([MOD, "control"], "j", lazy.layout.shrink(), desc="Shrink window"),
+    Key([MOD], "r", lazy.layout.reset(), desc="Reset window size"), 
+    Key([MOD, "shift"], "space", lazy.layout.flip(), desc="Flip main pane to the other side"),
 
     # Layout / window management
     Key([MOD], "Tab", lazy.next_layout(), desc="Next layout"),
     Key([MOD], "q", lazy.window.kill(), desc="Close window"),
     Key([MOD], "f", lazy.window.toggle_fullscreen(), desc="Toggle fullscreen"),
     Key([MOD], "t", lazy.window.toggle_floating(), desc="Toggle floating"),
-    Key([MOD, "shift"], "Return", lazy.layout.toggle_split(),
-        desc="Toggle split/stack"),
     Key(["mod1"], "Tab", lazy.spawn("rofi -show window"), desc="Window switcher (all groups)"),
 
     # Launchers
     Key([MOD], "Return", lazy.spawn(TERMINAL), desc="Open terminal"),
     Key([MOD], "d", lazy.spawn("rofi -show drun"), desc="App launcher"),
     Key([MOD], "p", lazy.spawn("rofi -show run"), desc="Run command"),
+    Key([MOD], "e", lazy.spawn("rofi -modi emoji -show emoji"), desc="Emoji picker"),
     Key([MOD], "w", lazy.spawn("helium-browser"), desc="Launch web browser"),
 
     # Media / volume / brightness (uses pactl + brightnessctl)
@@ -124,14 +113,19 @@ keys = [
     Key([MOD, "control"], "q", lazy.shutdown(), desc="Quit qtile"),
 
     #lock screen
-    Key([MOD, "shift"], "l", lazy.spawn("loginctl lock-session"), desc="Lock screen with blur"),
+    Key([MOD, "shift"], "x", lazy.spawn("loginctl lock-session"), desc="Lock screen with blur"),
+
+    #screenshot
+    Key([MOD, "shift"], "s",
+    lazy.spawn("sh -c 'maim -s ~/pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png'"),
+    desc="Screenshot (select region)"),
 ]
 
 # ──────────────────────────────────────────────────────────────────────────
 # GROUPS (workspaces)
 # ──────────────────────────────────────────────────────────────────────────
 
-groups = [Group(name) for name in "123456789"]
+groups = [Group(name) for name in "1234"]
 
 for g in groups:
     keys.extend([
@@ -155,13 +149,7 @@ layout_theme = {
 }
 
 layouts = [
-    # MonadTall is the default: one large "main" pane on the left,
-    # remaining windows stacked on the right.
-    layout.MonadTall(
-        **layout_theme,
-        ratio=0.50,                 # main pane takes 55% of the screen width
-        single_border_width=BORDER, # keep a border even with one window
-    ),
+    layout.MonadTall(**layout_theme),
     layout.Max(**layout_theme),
     #layout.Columns(**layout_theme, border_on_single=True),
     # Uncomment to add more:
@@ -194,7 +182,6 @@ def sep():
         background=COLORS["bg_alt"],
     )
 
-
 def label(text, color):
     """A small bright accent label, e.g. CPU / RAM / VOL."""
     return widget.TextBox(
@@ -204,9 +191,7 @@ def label(text, color):
         padding=4,
     )
 
-
 def build_widgets():
-    """Return the ordered list of bar widgets. Add/remove freely."""
     return [
         widget.Spacer(length=6),
 
@@ -300,18 +285,32 @@ def build_widgets():
         widget.Spacer(length=6),
     ]
 
+def build_widgets_secondary():
+    """Same bar as the primary, minus the system tray.
+    The tray can only live on one screen, so the second monitor's bar
+    omits it (everything else is identical)."""
+    return [
+        w for w in build_widgets()
+        if not isinstance(w, (widget.StatusNotifier, widget.Systray))
+    ]
+
+
+
+def make_bar(widgets):
+    """Build a bar with your standard styling from a widget list."""
+    return bar.Bar(
+        widgets,
+        BAR_HEIGHT,
+        background=COLORS["bg_alt"],
+        margin=BAR_MARGIN,
+        border_width=[0, 0, 1, 0],            # thin bottom hairline
+        border_color=COLORS["border"],
+    )
+
 
 screens = [
-    Screen(
-        top=bar.Bar(
-            build_widgets(),
-            BAR_HEIGHT,
-            background=COLORS["bg_alt"],
-            margin=BAR_MARGIN,
-            border_width=[0, 0, 1, 0],            # thin bottom hairline
-            border_color=COLORS["border"],
-        ),
-    ),
+    Screen(top=make_bar(build_widgets())),            # primary monitor (with tray)
+    Screen(top=make_bar(build_widgets_secondary())),  # secondary monitor (no tray)
 ]
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -350,6 +349,8 @@ floating_layout = layout.Floating(
         Match(wm_class="pavucontrol"),
         Match(title="branchdialog"),
         Match(title="pinentry"),
+        Match(wm_class="Mail"),
+        Match(wm_class="discord"),
     ],
 )
 
